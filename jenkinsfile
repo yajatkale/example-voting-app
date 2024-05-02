@@ -1,6 +1,6 @@
 pipeline {
     agent {
-            label "master"
+            label "AgentEC2"
             }
 
     stages {
@@ -31,8 +31,8 @@ pipeline {
             steps {
                 sh 'docker run -d --network back --name="redis" redis:alpine'
                 sh 'docker run -d --network back -e  POSTGRES_USER="postgres" -e POSTGRES_PASSWORD="postgres" --name "db" postgres:15-alpine'
-                sh 'docker run -d --network front --network back --name vote -p 5000:80 vote'
-                sh 'docker run -d --network front --network back --name result -p 5001:80 result'
+                sh 'docker run -d --network front --network back --name vote -p 5002:80 vote'
+                sh 'docker run -d --network front --network back --name result -p 5003:80 result'
                 sh 'docker run -d --network back --name worker worker'
                   }
             }
