@@ -4,6 +4,12 @@ import boto3
 ec2 = boto3.client('ec2', region_name='ap-south-1')
 
 response = ec2.describe_instances()
+current_inst = ec2.describe_tags(Filters=[
+        {
+            'Name': 'tag:Name',
+            'Values': ['Server']}
+])
+curr_inst_id = current_inst['Tags'][0]['ResourceId']                
 
 # Getting Instance IDs
 inst_id_running, inst_id_stopped = [], []
@@ -23,6 +29,7 @@ for inst in inst_id_stopped:
 
 # Stopping started instances
 for inst in inst_id_running:
-  ec2.stop_instances(InstanceIds=[inst])
+  if curr_inst_id not in inst:
+    ec2.stop_instances(InstanceIds=[inst])
 
   
