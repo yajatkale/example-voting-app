@@ -1,0 +1,36 @@
+pipeline {
+    agent AgentEC2
+
+    stages {
+        stage('CleanWorkspace') {
+            steps {
+                cleanWs()
+            }
+        stage('Setup') {
+            steps {
+                git 'https://github.com/yajatkale/example-voting-app.git'
+                
+                sh 'sudo docker -v >/dev/null 2>&1 || { sudo dnf install -y docker; sudo systemctl enable docker; sudo systemctl start docker; exit 1;}'
+                sh 'docker network create front >/dev/null 2>&1 || true'
+                sh 'docker network create back >/dev/null 2>&1  || true'
+                sh 'docker stop $(docker ps -aq) >/dev/null 2>&1 || true'
+                sh 'docker rm $(docker ps -aq) >/dev/null 2>&1 || true'
+            }
+        stage('Docker Images') {
+            steps {
+                sh 'docker build -t vote ./vote'
+                sh 'docker build -t worker ./worker'
+                sh 'docker build -t result ./result'
+            }
+        stage('Run containerss') {
+            steps {
+                sh 'docker run -d --network back --name='redis' redis:alpine'
+                sh 'docker run -d --network back -e  POSTGRES_USER="postgres" -e POSTGRES_PASSWORD="postgres" --name 'db' postgres:15-alpine'
+                sh 'docker run -d --network front --network back --name vote -p 5000:80 vote'
+                sh 'docker run -d --network front --network back --name result -p 5001:80 result'
+                sh 'docker run -d --network back --name worker worker'
+              }
+            }
+        }
+    }
+}
