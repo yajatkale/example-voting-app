@@ -1,0 +1,23 @@
+pipeline {
+    agent {
+            label "AgentEC2"
+            }
+
+    stages {
+        stage('CleanWorkspace') {
+            steps {
+                cleanWs()
+            }
+        }
+        stage('Setup') {
+            steps {
+                git branch: 'main', changelog: false, poll: false, url: 'https://github.com/yajatkale/example-voting-app.git'
+                
+                sh 'docker stop $(docker ps -aq) >/dev/null 2>&1 || true'
+                sh 'docker rm $(docker ps -aq) >/dev/null 2>&1 || true'
+
+                sh 'docker-compose up'
+            }
+        }  
+    }
+}
