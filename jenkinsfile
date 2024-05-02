@@ -1,11 +1,14 @@
 pipeline {
-    agent AgentEC2
+    agent {
+            label "master"
+            }
 
     stages {
         stage('CleanWorkspace') {
             steps {
                 cleanWs()
             }
+        }
         stage('Setup') {
             steps {
                 git 'https://github.com/yajatkale/example-voting-app.git'
@@ -15,12 +18,14 @@ pipeline {
                 sh 'docker network create back >/dev/null 2>&1  || true'
                 sh 'docker stop $(docker ps -aq) >/dev/null 2>&1 || true'
                 sh 'docker rm $(docker ps -aq) >/dev/null 2>&1 || true'
+                }
             }
         stage('Docker Images') {
             steps {
                 sh 'docker build -t vote ./vote'
                 sh 'docker build -t worker ./worker'
                 sh 'docker build -t result ./result'
+                }
             }
         stage('Run containerss') {
             steps {
@@ -29,10 +34,10 @@ pipeline {
                 sh 'docker run -d --network front --network back --name vote -p 5000:80 vote'
                 sh 'docker run -d --network front --network back --name result -p 5001:80 result'
                 sh 'docker run -d --network back --name worker worker'
-              }
+                  }
             }
-        }
+        
     }
 }
-}
-}
+
+
