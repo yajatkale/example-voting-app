@@ -11,7 +11,7 @@ pipeline {
         }
         stage('Setup') {
             steps {
-                git 'https://github.com/yajatkale/example-voting-app.git'
+                git branch: 'main', changelog: false, poll: false, url: 'https://github.com/yajatkale/example-voting-app.git'
                 
                 sh 'sudo docker -v >/dev/null 2>&1 || { sudo dnf install -y docker; sudo systemctl enable docker; sudo systemctl start docker; exit 1;}'
                 sh 'docker network create front >/dev/null 2>&1 || true'
